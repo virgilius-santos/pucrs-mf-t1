@@ -8,7 +8,11 @@ class  {:autocontracts} Stack
 
     predicate Valid()
     {
-        index <= arr.Length
+        index == |conteudo|
+        &&
+        index <= max
+        &&
+        arr.Length == max
         &&
         |arr[..index]| == |conteudo| 
         && 
@@ -18,6 +22,12 @@ class  {:autocontracts} Stack
     constructor (tamanho:nat)
     ensures is_Empty(conteudo)
     ensures max == tamanho
+    {
+        arr := new int[tamanho];
+        index := 0;
+        max := tamanho;
+        conteudo := [];
+    }
 
     method toogleStack()
     ensures isReversed(conteudo,old(conteudo))
@@ -28,31 +38,59 @@ class  {:autocontracts} Stack
     ensures r == false ==> conteudo == old(conteudo)
     ensures r == true ==> checkStack(old(conteudo),conteudo,v)
     ensures max == old(max)
+    {
+        var full := isFull();
+        r := full == false;
+        if r
+        {
+            arr[index] := v;
+            index := index + 1;
+            conteudo := conteudo + [v];
+            r := true;
+        }
+    }
 
     method pop() returns (r:int)
     requires !is_Empty(conteudo)
     ensures checkStack(conteudo,old(conteudo),r)
     ensures max == old(max)
+    {
+        index := index - 1;
+        conteudo := conteudo[..index];
+        r := arr[index];
+    }
 
     method numberOfElements() returns (r:nat)
     ensures r == |conteudo|
     ensures conteudo == old(conteudo)
     ensures max == old(max)
+    {
+        return index;
+    }
 
     method maxOfElements() returns (r:nat)
     ensures r == max
     ensures conteudo == old(conteudo)
     ensures max == old(max)
+    {
+        return arr.Length;
+    }
 
     method isEmpty() returns (r:bool)
     ensures r == is_Empty(conteudo)
     ensures conteudo == old(conteudo)
     ensures max == old(max)
+    {
+        return index == 0;
+    }
 
     method isFull() returns (r:bool)
     ensures r == is_Full(conteudo) 
     ensures conteudo == old(conteudo)
     ensures max == old(max)
+    {
+        return index == |arr[..]|;
+    }
 
     predicate is_Empty(cont:seq<int>)
     {
