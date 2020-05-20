@@ -8,62 +8,64 @@ class  {:autocontracts} Stack
 
     predicate Valid()
     {
+        arr.Length > 0
+        &&
+        max == arr.Length
+        &&
+        0 <= index <= arr.Length
+        &&
         index == |conteudo|
-        &&
-        index <= max
-        &&
-        arr.Length == max
-        &&
-        |arr[..index]| == |conteudo| 
         && 
         arr[..index] == conteudo
     }
 
     constructor (tamanho:nat)
-    ensures is_Empty(conteudo)
+    requires tamanho > 0
+    ensures |conteudo| == 0
     ensures max == tamanho
     {
         arr := new int[tamanho];
-        index := 0;
         max := tamanho;
+        index := 0;
         conteudo := [];
     }
 
     method toogleStack()
+    ensures |conteudo| == |old(conteudo)|
+    ensures permutacao(conteudo,old(conteudo))
     ensures isReversed(conteudo,old(conteudo))
-    ensures max == old(max)
+    ensures old(max) == max
 
     method push(v:int) returns (r:bool)
-    ensures r == !is_Full(old(conteudo))
+    ensures r == (|old(conteudo)| < max)
     ensures r == false ==> conteudo == old(conteudo)
-    ensures r == true ==> checkStack(old(conteudo),conteudo,v)
-    ensures max == old(max)
+    ensures r == true ==> conteudo == (old(conteudo) + [v]) && v == conteudo[|conteudo|-1]
+    ensures old(max) == max
     {
-        var full := isFull();
-        r := full == false;
+        r := index < arr.Length;
         if r
         {
             arr[index] := v;
             index := index + 1;
-            conteudo := conteudo + [v];
-            r := true;
+            conteudo := arr[..index];
         }
     }
 
     method pop() returns (r:int)
-    requires !is_Empty(conteudo)
-    ensures checkStack(conteudo,old(conteudo),r)
-    ensures max == old(max)
+    requires |conteudo| > 0
+    ensures r == old(conteudo)[|old(conteudo)|-1]
+    ensures old(conteudo)[..(|old(conteudo)|-1)] == conteudo
+    ensures old(max) == max
     {
         index := index - 1;
-        conteudo := conteudo[..index];
         r := arr[index];
+        conteudo := conteudo[..index];
     }
 
     method numberOfElements() returns (r:nat)
     ensures r == |conteudo|
     ensures conteudo == old(conteudo)
-    ensures max == old(max)
+    ensures old(max) == max
     {
         return index;
     }
@@ -71,50 +73,25 @@ class  {:autocontracts} Stack
     method maxOfElements() returns (r:nat)
     ensures r == max
     ensures conteudo == old(conteudo)
-    ensures max == old(max)
+    ensures old(max) == max
     {
-        return arr.Length;
+        r := arr.Length;
     }
 
     method isEmpty() returns (r:bool)
-    ensures r == is_Empty(conteudo)
+    ensures r == (|conteudo| == 0)
     ensures conteudo == old(conteudo)
-    ensures max == old(max)
+    ensures old(max) == max
     {
         return index == 0;
     }
 
     method isFull() returns (r:bool)
-    ensures r == is_Full(conteudo) 
+    ensures r == (|conteudo| == max)
     ensures conteudo == old(conteudo)
-    ensures max == old(max)
+    ensures old(max) == max
     {
-        return index == |arr[..]|;
-    }
-
-    predicate is_Empty(cont:seq<int>)
-    {
-        |cont| == 0
-    }
-
-    predicate is_Full(cont:seq<int>)
-    {
-        |cont| == max
-    }
-
-    predicate isLastElement(v:int,cont:seq<int>)
-    requires |cont| > 0
-    {
-        v == cont[|cont|-1]
-    }
-
-    predicate checkStack(s1:seq<int>,s2:seq<int>,v:int)
-    {
-        |s1| == |s2|-1
-        &&
-        s1 == s2[..|s2|-1]
-        &&
-        isLastElement(v,s2)
+        return index == arr.Length;
     }
 
     predicate permutacao(a:seq<int>,b:seq<int>)
@@ -130,106 +107,95 @@ class  {:autocontracts} Stack
     }
 }
 
-method Main2()
-{
-    var max := 0;
-    var rBool:bool;
-    var rNat:nat;
-    var rInt:nat;
 
-    max := 5;
-    var s2 := new Stack(max);
+// method Main0()
+// {
+//     var max := 3;
+//     var rBool:bool;
+//     var rNat:nat;
+//     var rInt:int;
 
-    rBool := s2.push(4);
-    assert rBool == true;
-    assert s2.conteudo == [4];
+//     // init
 
-    rBool := s2.push(3);
-    assert rBool == true;
-    assert s2.conteudo == [4,3];
+//     var s := new Stack(max);
 
-    rBool := s2.push(2);
-    assert rBool == true;
-    assert s2.conteudo == [4,3,2];
+//     rNat := s.maxOfElements();
+//     assert rNat == max;
 
-    rBool := s2.push(1);
-    assert rBool == true;
+//     rNat := s.numberOfElements();
+//     assert rNat == 0;
 
-    rBool := s2.push(1);
-    assert rBool == true;
+//     rBool := s.isEmpty();
+//     assert rBool;
 
-    rInt := s2.pop();   
-    assert rInt == 1;
+//     rBool :=  s.isFull();
+//     assert rBool == false;
 
-    assert s2.conteudo == [4,3,2,1];
-    s2.toogleStack();
-    assert s2.conteudo == [1,2,3,4];
+//     // Push
 
-    rInt := s2.pop();
-    assert rInt == 4;
-    assert s2.conteudo == [1,2,3];
+//     rBool := s.push(3);
+//     assert rBool == true;
+//     assert s.conteudo == [3];
 
-    rInt := s2.pop();
-    assert rInt == 3;
+//     rNat := s.numberOfElements();
+//     assert rNat == 1;
 
-    rInt := s2.pop();
-    assert rInt == 2;
+//     rBool := s.isEmpty();
+//     assert rBool == false;
 
-    rInt := s2.pop();
-    assert rInt == 1;
-}
+//     rBool :=  s.isFull();
+//     assert rBool == false;
+
+//     rNat := s.maxOfElements();
+//     assert rNat == max;
+
+//     rBool := s.push(4);
+//     rBool := s.push(1);
+//     assert s.conteudo == [3,4,1];
+
+//     rBool :=  s.isFull();
+//     assert rBool == true;
+
+//     rBool := s.push(5);
+//     assert rBool == false;
+//     assert s.conteudo == [3,4,1];
+
+//     // Pop
+
+//     rInt := s.pop();
+//     assert rInt == 1;
+//     assert s.conteudo == [3,4];
+
+//     rNat := s.numberOfElements();
+//     assert rNat == 2;
+
+//     rBool := s.isEmpty();
+//     assert rBool == false;
+
+//     rBool :=  s.isFull();
+//     assert rBool == false;
+
+//     rNat := s.maxOfElements();
+//     assert rNat == max;
+// }
 
 method Main1()
 {
-    var max := 0;
+    var max := 5;
     var rBool:bool;
     var rNat:nat;
     var rInt:nat;
 
-    max := 0;
-    var s1 := new Stack(max);
+    var s2 := new Stack(max);
 
-    rBool := s1.push(3);
-    assert rBool == false;
+    rBool := s2.push(4);
+    rBool := s2.push(3);
+    rBool := s2.push(2);
+    rBool := s2.push(1);
+    rBool := s2.push(1);
+    rInt := s2.pop();   
+    assert s2.conteudo == [4,3,2,1];
 
-    rNat := s1.maxOfElements();
-    assert rNat == 0;
-
-    rNat := s1.numberOfElements();
-    assert rNat == 0;
-
-    rBool := s1.isEmpty();
-    assert rBool;
-
-    rBool :=  s1.isFull();
-    assert rBool;
-}
-
-method Main3()
-{
-    var max := 0;
-    var rBool:bool;
-    var rNat:nat;
-    var rInt:nat;
-
-    max := 5;
-    var s3 := new Stack(max);
-
-    rBool := s3.push(3);
-    assert rBool == true;
-
-    rNat := s3.maxOfElements();
-    assert rNat == 5;
-
-    rNat := s3.numberOfElements();
-    assert rNat == 1;
-
-    rBool := s3.isEmpty();
-    assert rBool == false;
-
-    rBool :=  s3.isFull();
-    assert rBool == false;
-
-    rInt := s3.pop();
-    assert rInt == 3;
+    s2.toogleStack();
+    assert s2.conteudo == [1,2,3,4];
 }
