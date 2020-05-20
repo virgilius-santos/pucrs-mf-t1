@@ -33,16 +33,15 @@ class  {:autocontracts} Stack
     method toogleStack()
     ensures |conteudo| == |old(conteudo)|
     ensures isReversed(conteudo,old(conteudo))
+    ensures multiset(conteudo) == multiset(old(conteudo))
     ensures old(max) == max && index == old(index)
     {
         if arr.Length < 2
         {
             return;
         }
-        assert index <= arr.Length;
 
         var newArr := new int[arr.Length];
-
         forall(k | 0 <= k < index)
         {
             newArr[k] := arr[index-1-k];
