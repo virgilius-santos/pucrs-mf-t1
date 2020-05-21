@@ -31,10 +31,9 @@ class  {:autocontracts} Stack
     }
 
     method toogleStack()
+    ensures max == old(max)
     ensures |conteudo| == |old(conteudo)|
     ensures isReversed(conteudo,old(conteudo))
-    // ensures multiset(conteudo) == multiset(old(conteudo)) // aparentemente funciona sem
-    ensures max == old(max)
     {
         if arr.Length < 2
         {
@@ -46,18 +45,20 @@ class  {:autocontracts} Stack
         {
             newArr[k] := arr[index-1-k];
         }
-        // assert multiset(s1) == multiset(s2);  // aparentemente funciona sem
 
         arr := newArr;
         conteudo := arr[0..index];
     }
 
     method push(v:int) returns (r:bool)
+    ensures max == old(max)
     ensures r == (|old(conteudo)| < max)
     ensures r == false ==> conteudo == old(conteudo)
-    ensures r == true ==> conteudo == (old(conteudo) + [v])
-    ensures r == true ==> v == conteudo[|conteudo|-1]
-    ensures max == old(max)
+    ensures r == true ==> (
+        conteudo == (old(conteudo) + [v]) 
+        && v == conteudo[|conteudo|-1]
+        && old(conteudo) == conteudo[..(|conteudo|-1)]
+    )
     {
         r := index < arr.Length;
         if r
@@ -70,9 +71,9 @@ class  {:autocontracts} Stack
 
     method pop() returns (r:int)
     requires |conteudo| > 0
-    ensures r == old(conteudo)[|old(conteudo)|-1]
-    ensures old(conteudo)[..(|old(conteudo)|-1)] == conteudo
     ensures max == old(max)
+    ensures r == old(conteudo)[|old(conteudo)|-1]
+    ensures conteudo == old(conteudo)[..(|old(conteudo)|-1)]
     {
         index := index - 1;
         r := arr[index];
@@ -80,37 +81,36 @@ class  {:autocontracts} Stack
     }
 
     method numberOfElements() returns (r:nat)
-    ensures r == |conteudo|
     ensures max == old(max) && conteudo == old(conteudo)
+    ensures r == |conteudo|
     {
         return index;
     }
 
     method maxOfElements() returns (r:nat)
-    ensures r == max
     ensures max == old(max) && conteudo == old(conteudo)
+    ensures r == max
     {
         r := arr.Length;
     }
 
     method isEmpty() returns (r:bool)
-    ensures r == (|conteudo| == 0)
     ensures max == old(max) && conteudo == old(conteudo)
+    ensures r == (|conteudo| == 0)
     {
         return index == 0;
     }
 
     method isFull() returns (r:bool)
-    ensures r == (|conteudo| == max)
     ensures max == old(max) && conteudo == old(conteudo)
+    ensures r == (|conteudo| == max)
     {
         return index == arr.Length;
     }
 
     predicate isReversed(s1:seq<int>,s2:seq<int>)
+    requires |s1| == |s2|
     {
-        |s1| == |s2|
-        &&
         forall k :: 0 <= k < |s1| ==> s1[k] == s2[|s2| - 1 - k]
     }
 }
@@ -185,8 +185,29 @@ method Main0()
     rNat := s.maxOfElements();
     assert rNat == max;
 
+    rInt := s.pop();
+    assert rInt == 4;
+    rInt := s.pop();
+    assert rInt == 3;
+
+    assert s.conteudo == [];
+
+    // toogle
+
+    rBool := s.push(4);
+    assert rBool == true;
+    assert s.conteudo == [4];
+    rBool := s.push(1);
+    assert rBool == true;
+    assert s.conteudo == [4,1];
+    rBool := s.push(3);
+    assert rBool == true;
+    assert s.conteudo == [4,1,3];
+    rBool := s.push(6);
+    assert rBool == false;
+    assert s.conteudo == [4,1,3];
     s.toogleStack();
-    assert s.conteudo == [4,3];
+    assert s.conteudo == [3,1,4];
 }
 
 method Main1()
