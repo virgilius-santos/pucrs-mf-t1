@@ -33,7 +33,7 @@ class  {:autocontracts} Stack
     method toogleStack()
     ensures |conteudo| == |old(conteudo)|
     ensures isReversed(conteudo,old(conteudo))
-    ensures multiset(conteudo) == multiset(old(conteudo))
+    // ensures multiset(conteudo) == multiset(old(conteudo))
     ensures old(max) == max && index == old(index)
     {
         if arr.Length < 2
@@ -46,8 +46,7 @@ class  {:autocontracts} Stack
         {
             newArr[k] := arr[index-1-k];
         }
-        var s1,s2 := newArr[..index],arr[..index];
-        assert multiset(s1) == multiset(s2);
+        // assert multiset(s1) == multiset(s2);
 
         arr := newArr;
         conteudo := arr[0..index];
@@ -206,7 +205,6 @@ method Main1()
     rBool := s2.push(1);
     rInt := s2.pop();   
     assert s2.conteudo == [4,3,2,1];
-
     s2.toogleStack();
     assert s2.conteudo == [1,2,3,4];
 }
