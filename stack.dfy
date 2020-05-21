@@ -33,8 +33,8 @@ class  {:autocontracts} Stack
     method toogleStack()
     ensures |conteudo| == |old(conteudo)|
     ensures isReversed(conteudo,old(conteudo))
-    // ensures multiset(conteudo) == multiset(old(conteudo))
-    ensures old(max) == max && index == old(index)
+    // ensures multiset(conteudo) == multiset(old(conteudo)) // aparentemente funciona sem
+    ensures max == old(max)
     {
         if arr.Length < 2
         {
@@ -46,7 +46,7 @@ class  {:autocontracts} Stack
         {
             newArr[k] := arr[index-1-k];
         }
-        // assert multiset(s1) == multiset(s2);
+        // assert multiset(s1) == multiset(s2);  // aparentemente funciona sem
 
         arr := newArr;
         conteudo := arr[0..index];
@@ -55,8 +55,9 @@ class  {:autocontracts} Stack
     method push(v:int) returns (r:bool)
     ensures r == (|old(conteudo)| < max)
     ensures r == false ==> conteudo == old(conteudo)
-    ensures r == true ==> conteudo == (old(conteudo) + [v]) && v == conteudo[|conteudo|-1]
-    ensures old(max) == max
+    ensures r == true ==> conteudo == (old(conteudo) + [v])
+    ensures r == true ==> v == conteudo[|conteudo|-1]
+    ensures max == old(max)
     {
         r := index < arr.Length;
         if r
@@ -71,7 +72,7 @@ class  {:autocontracts} Stack
     requires |conteudo| > 0
     ensures r == old(conteudo)[|old(conteudo)|-1]
     ensures old(conteudo)[..(|old(conteudo)|-1)] == conteudo
-    ensures old(max) == max
+    ensures max == old(max)
     {
         index := index - 1;
         r := arr[index];
@@ -80,32 +81,28 @@ class  {:autocontracts} Stack
 
     method numberOfElements() returns (r:nat)
     ensures r == |conteudo|
-    ensures conteudo == old(conteudo)
-    ensures old(max) == max
+    ensures max == old(max) && conteudo == old(conteudo)
     {
         return index;
     }
 
     method maxOfElements() returns (r:nat)
     ensures r == max
-    ensures conteudo == old(conteudo)
-    ensures old(max) == max
+    ensures max == old(max) && conteudo == old(conteudo)
     {
         r := arr.Length;
     }
 
     method isEmpty() returns (r:bool)
     ensures r == (|conteudo| == 0)
-    ensures conteudo == old(conteudo)
-    ensures old(max) == max
+    ensures max == old(max) && conteudo == old(conteudo)
     {
         return index == 0;
     }
 
     method isFull() returns (r:bool)
     ensures r == (|conteudo| == max)
-    ensures conteudo == old(conteudo)
-    ensures old(max) == max
+    ensures max == old(max) && conteudo == old(conteudo)
     {
         return index == arr.Length;
     }
