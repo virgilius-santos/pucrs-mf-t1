@@ -187,6 +187,9 @@ method Main0()
 
     rNat := s.maxOfElements();
     assert rNat == max;
+
+    s.toogleStack();
+    assert s.conteudo == [4,3];
 }
 
 method Main1()
