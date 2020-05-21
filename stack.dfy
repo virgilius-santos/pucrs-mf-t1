@@ -32,9 +32,25 @@ class  {:autocontracts} Stack
 
     method toogleStack()
     ensures |conteudo| == |old(conteudo)|
-    ensures permutacao(conteudo,old(conteudo))
     ensures isReversed(conteudo,old(conteudo))
-    ensures old(max) == max
+    // ensures multiset(conteudo) == multiset(old(conteudo))
+    ensures old(max) == max && index == old(index)
+    {
+        if arr.Length < 2
+        {
+            return;
+        }
+
+        var newArr := new int[arr.Length];
+        forall(k | 0 <= k < index)
+        {
+            newArr[k] := arr[index-1-k];
+        }
+        // assert multiset(s1) == multiset(s2);
+
+        arr := newArr;
+        conteudo := arr[0..index];
+    }
 
     method push(v:int) returns (r:bool)
     ensures r == (|old(conteudo)| < max)
@@ -94,11 +110,6 @@ class  {:autocontracts} Stack
         return index == arr.Length;
     }
 
-    predicate permutacao(a:seq<int>,b:seq<int>)
-    {
-        multiset(a) == multiset(b)
-    }
-
     predicate isReversed(s1:seq<int>,s2:seq<int>)
     {
         |s1| == |s2|
@@ -107,77 +118,76 @@ class  {:autocontracts} Stack
     }
 }
 
+method Main0()
+{
+    var max := 3;
+    var rBool:bool;
+    var rNat:nat;
+    var rInt:int;
 
-// method Main0()
-// {
-//     var max := 3;
-//     var rBool:bool;
-//     var rNat:nat;
-//     var rInt:int;
+    // init
 
-//     // init
+    var s := new Stack(max);
 
-//     var s := new Stack(max);
+    rNat := s.maxOfElements();
+    assert rNat == max;
 
-//     rNat := s.maxOfElements();
-//     assert rNat == max;
+    rNat := s.numberOfElements();
+    assert rNat == 0;
 
-//     rNat := s.numberOfElements();
-//     assert rNat == 0;
+    rBool := s.isEmpty();
+    assert rBool;
 
-//     rBool := s.isEmpty();
-//     assert rBool;
+    rBool :=  s.isFull();
+    assert rBool == false;
 
-//     rBool :=  s.isFull();
-//     assert rBool == false;
+    // Push
 
-//     // Push
+    rBool := s.push(3);
+    assert rBool == true;
+    assert s.conteudo == [3];
 
-//     rBool := s.push(3);
-//     assert rBool == true;
-//     assert s.conteudo == [3];
+    rNat := s.numberOfElements();
+    assert rNat == 1;
 
-//     rNat := s.numberOfElements();
-//     assert rNat == 1;
+    rBool := s.isEmpty();
+    assert rBool == false;
 
-//     rBool := s.isEmpty();
-//     assert rBool == false;
+    rBool :=  s.isFull();
+    assert rBool == false;
 
-//     rBool :=  s.isFull();
-//     assert rBool == false;
+    rNat := s.maxOfElements();
+    assert rNat == max;
 
-//     rNat := s.maxOfElements();
-//     assert rNat == max;
+    rBool := s.push(4);
+    rBool := s.push(1);
+    assert s.conteudo == [3,4,1];
 
-//     rBool := s.push(4);
-//     rBool := s.push(1);
-//     assert s.conteudo == [3,4,1];
+    rBool :=  s.isFull();
+    assert rBool == true;
 
-//     rBool :=  s.isFull();
-//     assert rBool == true;
+    rBool := s.push(5);
+    assert rBool == false;
+    assert s.conteudo == [3,4,1];
 
-//     rBool := s.push(5);
-//     assert rBool == false;
-//     assert s.conteudo == [3,4,1];
+    // Pop
 
-//     // Pop
+    rInt := s.pop();
+    assert rInt == 1;
+    assert s.conteudo == [3,4];
 
-//     rInt := s.pop();
-//     assert rInt == 1;
-//     assert s.conteudo == [3,4];
+    rNat := s.numberOfElements();
+    assert rNat == 2;
 
-//     rNat := s.numberOfElements();
-//     assert rNat == 2;
+    rBool := s.isEmpty();
+    assert rBool == false;
 
-//     rBool := s.isEmpty();
-//     assert rBool == false;
+    rBool :=  s.isFull();
+    assert rBool == false;
 
-//     rBool :=  s.isFull();
-//     assert rBool == false;
-
-//     rNat := s.maxOfElements();
-//     assert rNat == max;
-// }
+    rNat := s.maxOfElements();
+    assert rNat == max;
+}
 
 method Main1()
 {
@@ -195,7 +205,6 @@ method Main1()
     rBool := s2.push(1);
     rInt := s2.pop();   
     assert s2.conteudo == [4,3,2,1];
-
     s2.toogleStack();
     assert s2.conteudo == [1,2,3,4];
 }
